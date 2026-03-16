@@ -6,6 +6,7 @@ import { Icon } from '@iconify/vue'
 import { REPO_URL } from '@/data/constants'
 import { pages } from '@/data/pages-loader'
 import { useFavorites } from '@/composables/useFavorites'
+import GiscusModal from '@/components/GiscusModal.vue'
 
 const props = defineProps<{
   pagePath: string
@@ -18,6 +19,7 @@ const { toggleFavorite, isFavorite } = useFavorites()
 const isDismissed = ref(false)
 const isOpen = ref(false)
 const isAnimating = ref(false)
+const showComments = ref(false)
 
 const { start: startHideTimer, stop: stopHideTimer } = useTimeoutFn(
   () => {
@@ -168,6 +170,12 @@ function reportIssue() {
           }}</span>
         </button>
 
+        <!-- Comments -->
+        <button class="toolbar-btn group" title="Bình luận" @click="showComments = true">
+          <Icon icon="lucide:message-square" class="w-5 h-5" />
+          <span class="toolbar-label font-display tracking-wide">Bình luận</span>
+        </button>
+
         <!-- Report / Feedback -->
         <button class="toolbar-btn group" title="Góp ý về trang này" @click="reportIssue">
           <Icon icon="lucide:message-circle" class="w-5 h-5" />
@@ -196,6 +204,8 @@ function reportIssue() {
       </div>
     </div>
   </div>
+
+  <GiscusModal :show="showComments" @close="showComments = false" />
 </template>
 
 <style scoped>
