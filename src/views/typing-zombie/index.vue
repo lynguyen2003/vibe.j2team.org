@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTimeoutFn } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useGameStore } from './stores/gameStore'
@@ -16,8 +17,20 @@ const { start, resume, stop } = useGameLoop()
 const inputRef = ref<InstanceType<typeof TypingInput> | null>(null)
 const damageFlash = ref(false)
 const killFlash = ref(false)
-let flashTimer: number | undefined
-let killFlashTimer: number | undefined
+const { start: startFlashTimer, stop: stopFlashTimer } = useTimeoutFn(
+  () => {
+    damageFlash.value = false
+  },
+  120,
+  { immediate: false },
+)
+const { start: startKillFlashTimer, stop: stopKillFlashTimer } = useTimeoutFn(
+  () => {
+    killFlash.value = false
+  },
+  90,
+  { immediate: false },
+)
 
 const shakeStyle = computed(() => {
   const x = Math.round(store.shakeX * 10)
@@ -57,10 +70,8 @@ watch(
   (hp, prev) => {
     if (prev !== undefined && hp < prev) {
       damageFlash.value = true
-      if (flashTimer) window.clearTimeout(flashTimer)
-      flashTimer = window.setTimeout(() => {
-        damageFlash.value = false
-      }, 120)
+      stopFlashTimer()
+      startFlashTimer()
     }
   },
 )
@@ -70,10 +81,8 @@ watch(
   (v, prev) => {
     if (prev !== undefined && v !== prev) {
       killFlash.value = true
-      if (killFlashTimer) window.clearTimeout(killFlashTimer)
-      killFlashTimer = window.setTimeout(() => {
-        killFlash.value = false
-      }, 90)
+      stopKillFlashTimer()
+      startKillFlashTimer()
     }
   },
 )

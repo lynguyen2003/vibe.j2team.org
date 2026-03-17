@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventListener } from '@vueuse/core'
+import { useEventListener, useTimeoutFn } from '@vueuse/core'
 import { onMounted, ref, watch } from 'vue'
 import { useGameStore } from '../stores/gameStore'
 
@@ -7,7 +7,13 @@ const store = useGameStore()
 const inputRef = ref<HTMLInputElement | null>(null)
 const localText = ref('')
 const isShaking = ref(false)
-let shakeTimer: number | undefined
+const { start: startShakeTimer, stop: stopShakeTimer } = useTimeoutFn(
+  () => {
+    isShaking.value = false
+  },
+  160,
+  { immediate: false },
+)
 
 watch(
   () => store.typedText,
@@ -51,10 +57,8 @@ watch(
   (v, prev) => {
     if (prev !== undefined && v !== prev) {
       isShaking.value = true
-      if (shakeTimer) window.clearTimeout(shakeTimer)
-      shakeTimer = window.setTimeout(() => {
-        isShaking.value = false
-      }, 160)
+      stopShakeTimer()
+      startShakeTimer()
     }
   },
 )
